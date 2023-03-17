@@ -1,14 +1,27 @@
 <div style="height: 84vh">
   <h1 style="margin: 0">This is home page</h1>
-  <section id="feed_post">
-    <form action="/post" method="post" id="new_post_form">
+  <section id="feed-posts">
+    <h4>Posts</h4>
+    <% if(locals.user){ %>
+    <form action="/posts/create" id="new_post_form" method="POST">
       <textarea
         name="content"
         cols="30"
         rows="3"
-        placeholder="Type here..."
+        placeholder="Type Here..."
       ></textarea>
       <input type="submit" value="Post" />
     </form>
+    <%}%>
+    <div id="post_list_container">
+      <ul>
+        <% for(post of posts){ %>
+        <p>
+          <li><%= post.content%></li>
+          <small><%= post.user.name%></small>
+        </p>
+        <% } %>
+      </ul>
+    </div>
   </section>
 </div>
