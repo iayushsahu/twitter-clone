@@ -1,30 +1,6 @@
 const Post = require("../models/post");
 const Comment = require("../models/comment");
 
-// module.exports.create = (req, res) => {
-//   Post.findById(req.body.post, (err, post) => {
-//     if (post) {
-//       Comment.create(
-//         {
-//           content: req.body.content,
-//           post: req.body.post,
-//           user: req.user._id,
-//         },
-//         (err, comment) => {
-//           if (err) {
-//             console.log(`error in creating a comment ${err}`);
-//             return;
-//           }
-//           post.comments.push(comment);
-//           post.save();
-
-//           res.redirect("/");
-//         }
-//       );
-//     }
-//   });
-// };
-
 module.exports.create = async (req, res) => {
   try {
     const post = await Post.findById(req.body.post);
@@ -43,5 +19,30 @@ module.exports.create = async (req, res) => {
   } catch (error) {
     console.log(`error in creating a comment ${error}`);
     return res.redirect("/");
+  }
+};
+
+module.exports.destroy = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.id).exec();
+    if (comment.user == req.user.id) {
+      const postId = comment.post;
+      await comment.deleteOne();
+      await Post.findByIdAndUpdate(postId, {
+        $pull: { comment: req.params.id },
+      })
+        .then(() => {
+          res.redirect("back");
+        })
+        .catch((err) => {
+          console.error(err);
+          res.redirect("back");
+        });
+    } else {
+      res.redirect("back");
+    }
+  } catch (err) {
+    console.error(err);
+    res.redirect("back");
   }
 };
