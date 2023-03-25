@@ -1,5 +1,27 @@
 <div class="profile_container" style="height: 84vh">
-  <h1 style="margin: 0;">profile</h1>
-  <p><%= user.name%></p>
-  <p><%= user.email%></p>
+  <h1 style="margin: 0">profile</h1>
+  <% if(user.id == profile_user.id){%>
+
+  <form action="/users/update/<%= profile_user.id %>" method="post">
+    <input
+      type="text"
+      name="name"
+      required
+      placeholder="your name"
+      value="<%= profile_user.name%>"
+    />
+    <input
+      type="email"
+      name="email"
+      required
+      placeholder="your email"
+      value="<%= profile_user.email%>"
+    />
+    <input type="submit" value="update" />
+  </form>
+
+  <%}else{%>
+  <p><%= profile_user.name%></p>
+  <p><%= profile_user.email%></p>
+  <%}%>
 </div>
