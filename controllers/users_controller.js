@@ -1,4 +1,6 @@
 const User = require("../models/user");
+const fs = require("fs");
+const path = require("path");
 
 module.exports.profile = async (req, res) => {
   const user = await User.findById(req.params.id).exec();
@@ -9,7 +11,7 @@ module.exports.profile = async (req, res) => {
   });
 };
 
-module.exports.update = async (req, res) => {
+/* module.exports.update = async (req, res) => {
   try {
     if (req.user.id == req.params.id) {
       const user = await User.findByIdAndUpdate(req.params.id, req.body);
@@ -24,7 +26,117 @@ module.exports.update = async (req, res) => {
     console.error(error);
     res.status(500).send("Internal Server Error");
   }
+}; */
+
+module.exports.update = async (req, res, next) => {
+  try {
+    if (req.user.id === req.params.id) {
+      const user = await User.findById(req.params.id);
+      User.uploadedAvatar(req, res, (err) => {
+        if (err) {
+          req.flash("error", "facing some error!");
+          return next(err);
+        }
+        user.email = req.body.email;
+        user.name = req.body.name;
+        if (req.file) {
+          if (user.avatar) {
+            fs.unlinkSync(path.join(__dirname, "..", user.avatar));
+          }
+          user.avatar = `${User.avatarPath}/${req.file.filename}`;
+        }
+        user.save();
+      });
+      req.flash("success", "updated successfully!");
+      return res.redirect("back");
+    } else {
+      req.flash("error", "Unauthorized!");
+      return res.status(401).send("unauthorized");
+    }
+  } catch (error) {
+    req.flash("error", "facing some error!");
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
 };
+
+/* module.exports.update = async (req, res, next) => {
+  try {
+    if (req.user.id === req.params.id) {
+      const user = await User.findById(req.params.id);
+
+      const existingUser = await User.findOne({ email: req.body.email });
+
+      if (existingUser && existingUser.id !== req.params.id) {
+        req.flash("error", "This email is already in use.");
+        return res.redirect("back");
+      }
+
+      User.uploadedAvatar(req, res, (err) => {
+        if (err) {
+          req.flash("error", "facing some error!");
+          return next(err);
+        }
+        user.email = req.body.email;
+        user.name = req.body.name;
+        if (req.file) {
+          user.avatar = `${User.avatarPath}/${req.file.filename}`;
+        }
+        user.save();
+      });
+      req.flash("success", "updated successfully!");
+      return res.redirect("back");
+    } else {
+      req.flash("error", "Unauthorized!");
+      return res.status(401).send("unauthorized");
+    }
+  } catch (error) {
+    req.flash("error", "facing some error!");
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+ */
+
+/* module.exports.update = async (req, res, next) => {
+  try {
+    if (req.user.id === req.params.id) {
+      const user = await User.findById(req.params.id);
+      User.uploadedAvatar(req, res, (err) => {
+        if (err) {
+          req.flash("error", "facing some error!");
+          return next(err);
+        }
+        user.email = req.body.email;
+        user.name = req.body.name;
+        if (req.file) {
+          user.avatar = `${User.avatarPath}/${req.file.filename}`;
+        }
+        user.save((err) => {
+          if (err) {
+            if (err.code === 11000 && err.keyPattern && err.keyPattern.email) {
+              req.flash("error", "This email is already present.");
+              return res.redirect("back");
+            }
+            req.flash("error", "facing some error!");
+            console.error(err);
+            return res.status(500).send("Internal Server Error");
+          }
+          req.flash("success", "updated successfully!");
+          return res.redirect("back");
+        });
+      });
+    } else {
+      req.flash("error", "Unauthorized!");
+      return res.status(401).send("unauthorized");
+    }
+  } catch (error) {
+    req.flash("error", "facing some error!");
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+*/
 
 // render the sign up page
 module.exports.signUp = function (req, res) {

@@ -1,22 +1,27 @@
 <div class="profile_container" style="height: 84vh">
-  <h1 style="margin: 0">profile</h1>
+  <img src="<%= profile_user.avatar %>" alt="<%= profile_user.name %>" width="100" />
+  
   <% if(user.id == profile_user.id){%>
-
-  <form action="/users/update/<%= profile_user.id %>" method="post">
+    <form
+    action="/users/update/<%= profile_user.id %>"
+    method="post"
+    enctype="multipart/form-data"
+    >
     <input
       type="text"
       name="name"
       required
       placeholder="your name"
       value="<%= profile_user.name%>"
-    />
+      />
     <input
-      type="email"
-      name="email"
-      required
+    type="email"
+    name="email"
+    required
       placeholder="your email"
       value="<%= profile_user.email%>"
     />
+    <input type="file" name="avatar" placeholder="profile picture" />
     <input type="submit" value="update" />
   </form>
 
